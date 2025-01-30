@@ -19,7 +19,7 @@ def extract_text_from_pdf(uploaded_file):
     return text
 
 # Text preprocessing to chunk the document
-def preprocess_text(text, chunk_size=500):
+def preprocess_text(text, chunk_size=300):
     text = re.sub(r'\s+', ' ', text)
     sentences = text.split('.')
     chunks, chunk = [], ""
@@ -60,24 +60,7 @@ if uploaded_file is not None:
     if query:
         with st.spinner("🔍 Searching for relevant content..."):
             relevant_chunks = semantic_search(query, chunks)  # Perform semantic search
-
-            # Extract the most relevant sentence or chunk from the selected chunks
-            answer = ""
-            for chunk in relevant_chunks:
-                # Split chunk into sentences and check for relevance
-                sentences = chunk.split('.')
-                for sentence in sentences:
-                    sentence_embedding = model.encode([sentence])
-                    query_embedding = model.encode([query])
-                    similarity = cosine_similarity(sentence_embedding, query_embedding)
-                    if similarity > 0.5:  # Threshold for relevant answers (tune as needed)
-                        answer = sentence.strip()
-                        break
-                if answer:
-                    break  # Break once the relevant answer is found
+            context = " ".join(relevant_chunks)
         
         st.subheader("Answer")
-        if answer:
-            st.write(answer)  # Display the top relevant sentence or chunk
-        else:
-            st.write("Sorry, I couldn't find an appropriate answer. Please try again.")
+        st.write(context)  # Display the top relevant chunks
